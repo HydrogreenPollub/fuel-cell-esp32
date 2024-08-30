@@ -3,7 +3,6 @@
 #include "driver/uart.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_oneshot.h"
-#include "esp_chip_info.h"
 #include "esp_err.h"
 #include "esp_flash.h"
 #include "esp_log.h"
@@ -19,9 +18,9 @@
 
 /*  digital output main valve
     digtal output purge valve
-    PWM fan
-    pulse coutner tacho x2
-    ADC temp sensor */
+    PWM fan     (100%)
+    pulse coutner tacho x2 (50%)
+    ADC fuel cell temp sensor (100%)  */
 
 bool fan_flash = 0;
 bool flash = 0;
@@ -57,12 +56,12 @@ void config_gpios()
     };
     gpio_config(&MAIN_VALVE_MCU);
 
-    // // Purge valve output gpio
-    // gpio_config_t PURGE_VALVE_MCU = {
-    //     .pin_bit_mask = 1ULL << GPIO_NUM_27, // gpio is occupied, need to change documentation
-    //     .mode = GPIO_MODE_OUTPUT,
-    // };
-    // gpio_config(&PURGE_VALVE_MCU);
+    // Purge valve output gpio
+    gpio_config_t PURGE_VALVE_MCU = {
+        .pin_bit_mask = 1ULL << GPIO_NUM_27, // gpio is occupied, need to change documentation
+        .mode = GPIO_MODE_OUTPUT,
+    };
+    gpio_config(&PURGE_VALVE_MCU);
 
     // // Fan output gpio
     // gpio_config_t FAN_ON_MCU = {

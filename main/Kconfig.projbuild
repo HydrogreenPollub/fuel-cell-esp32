@@ -1,0 +1,76 @@
+menu "Fuel Cell Control Unit configuration"
+
+    menu "Fans configuration"
+        config FANS_ON_OFF_GPIO_NUM
+            int "Fans on/off GPIO number"
+            default 28
+            help
+                GPIO number for turning on/off power output for both fans
+        
+        config FAN_LEFT_TACHO_GPIO_NUM
+            int "Left fan ADC tacho GPIO number"
+            default 29
+
+        config FAN_RIGHT_TACHO_GPIO_NUM
+            int "Right fan ADC tacho GPIO number"
+            default 30
+
+        config FAN_PWM_OUT_GPIO_NUM
+            int "Fans PWM output signal"
+            default 28
+            help
+                GPIO PWM number for both fans
+
+        config FAN_PWM_FREQUENCY
+            int "Frequency for fans PWM"
+            default 10
+
+        config FANS_ADC_NUM
+            int "Left fan ADC number"
+            default 1
+
+        config FANS_ADC_CHANNEL
+            int "Left fan ADC channel"
+            default 2
+
+        
+
+
+    endmenu
+    
+    menu "Generic I/O configurtion"
+        config IO_1_GPIO_NUM
+            int "I/O_1 GPIO number"
+            default 7
+            help
+                GPIO number I/O_1_MCU
+
+        config IO_2_GPIO_NUM
+            int "I/O_2 GPIO number"
+            default 8
+            help
+                GPIO number I/O_2_MCU
+    
+        config IO_3_GPIO_NUM
+            int "I/O_3 GPIO number"
+            default 11
+            help
+                GPIO number I/O_3_MCU
+
+        config IO_4_GPIO_NUM
+            int "I/O_4 GPIO number"
+            default 13
+            help
+                GPIO number I/O_4_MCU
+
+    endmenu
+
+        config FUEL_CELL_TEMP_ADC_NUM
+            int "Fuel Cell temperature ADC number"
+            default 1
+
+        config FUEL_CELL_TEMP_ADC_CHANNEL
+            int "Fuel Cell temperature ADC channel"
+            default 1
+
+endmenu
