@@ -16,6 +16,10 @@
 #include <stdio.h>
 #include "driver/pulse_cnt.h"
 
+#include "can.h"
+#include "fans.h"
+#include "test_led.h"
+
 /*  digital output main valve
     digtal output purge valve
     PWM fan     (100%)
@@ -23,12 +27,12 @@
     ADC fuel cell temp sensor (100%)  */
 
 bool fan_flash = 0;
-bool flash = 0;
-bool signal_change = 0;
+// bool flash = 0;
+// bool signal_change = 0;
 
 pcnt_unit_handle_t pcnt_handle;
 pcnt_channel_handle_t pcnt_channel_handle;
-esp_timer_handle_t timer_handle;
+// esp_timer_handle_t timer_handle;
 uint64_t timer_last_time = 0;
 
 adc_cali_handle_t adc_cali_handle;
@@ -42,12 +46,12 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 void config_gpios()
 {
     // OUTPUTS
-    // LED Test  output gpio
-    gpio_config_t LED = {
-        .pin_bit_mask = 1ULL << GPIO_NUM_33,
-        .mode = GPIO_MODE_OUTPUT,
-    };
-    gpio_config(&LED);
+    // LED Test output gpio
+    // gpio_config_t LED = {
+    //     .pin_bit_mask = 1ULL << GPIO_NUM_33,
+    //     .mode = GPIO_MODE_OUTPUT,
+    // };
+    // gpio_config(&LED);
 
     // Main valve output gpio
     gpio_config_t MAIN_VALVE_MCU = {
@@ -126,49 +130,49 @@ void config_gpios()
     gpio_config(&FAN_IN_PWM_MCU);
 }
 
-void IRAM_ATTR gpio_isr_handler()
-{
-    uint64_t timer_time = esp_timer_get_time();
-    if (timer_time - timer_last_time > 50 * 1000)
-    {
-        if (signal_change)
-        {
-            esp_timer_start_periodic(timer_handle, 1000 * 100);
-        }
-        else
-        {
-            if (esp_timer_is_active(timer_handle))
-            {
-                esp_timer_stop(timer_handle);
-            };
-            gpio_set_level(GPIO_NUM_33, 0);
-        }
-        signal_change = !signal_change;
-    }
-    timer_last_time = timer_time;
-};
+// void IRAM_ATTR gpio_isr_handler()
+// {
+//     uint64_t timer_time = esp_timer_get_time();
+//     if (timer_time - timer_last_time > 50 * 1000)
+//     {
+//         if (signal_change)
+//         {
+//             esp_timer_start_periodic(timer_handle, 1000 * 100);
+//         }
+//         else
+//         {
+//             if (esp_timer_is_active(timer_handle))
+//             {
+//                 esp_timer_stop(timer_handle);
+//             };
+//             gpio_set_level(GPIO_NUM_33, 0);
+//         }
+//         signal_change = !signal_change;
+//     }
+//     timer_last_time = timer_time;
+// };
 
-void config_interrupt_handler()
-{
-    gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
+// void config_interrupt_handler()
+// {
+//     gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
 
-    gpio_isr_handler_add(GPIO_NUM_1, gpio_isr_handler, NULL);
-}
+//     gpio_isr_handler_add(GPIO_NUM_1, gpio_isr_handler, NULL);
+// }
 
-void timer_function()
-{
-    gpio_set_level(GPIO_NUM_33, flash);
-    flash = !flash;
-}
+// void timer_function()
+// {
+//     gpio_set_level(GPIO_NUM_33, flash);
+//     flash = !flash;
+// }
 
-void config_timer()
-{
-    esp_timer_create_args_t timer_args = {
-        .callback = timer_function,
-        .dispatch_method = ESP_TIMER_TASK,
-    };
-    esp_timer_create(&timer_args, &timer_handle);
-}
+// void config_timer()
+// {
+//     esp_timer_create_args_t timer_args = {
+//         .callback = timer_function,
+//         .dispatch_method = ESP_TIMER_TASK,
+//     };
+//     esp_timer_create(&timer_args, &timer_handle);
+// }
 
 void adc_init()
 {
@@ -251,31 +255,35 @@ void pulse_counter_init()
 
 void app_main(void)
 {
-    config_gpios();
-    config_timer();
-    config_interrupt_handler();
-    adc_init();
-    pwm_init();
-    pulse_counter_init();
+    // config_gpios();
+    // config_timer();
+    // config_interrupt_handler();
+    // adc_init();
+    // pwm_init();
+    // pulse_counter_init();
 
-    int adc_output = 0;
-    int pcnt_value = 0;
-    int fan_rpm_value = 0;
+    // int adc_output = 0;
+    // int pcnt_value = 0;
+    // int fan_rpm_value = 0;
+    can_initialize();
+    test_led_initialize();
 
     while (1)
     {
-        adc_oneshot_read(adc_unit, ADC_CHANNEL_1, &adc_output);
-        float voltage = map(adc_output, 0, 4095, 0, 3.3);
-        uint32_t duty = (uint32_t) map(adc_output, 0, 4095, 0, 8000);
-        ESP_LOGI("ADC", "%.2f V, (value: %d, duty: %lu/8000)", voltage, adc_output, duty);
+        // can_send();
+        can_recieve();
+        // adc_oneshot_read(adc_unit, ADC_CHANNEL_1, &adc_output);
+        // float voltage = map(adc_output, 0, 4095, 0, 3.3);
+        // uint32_t duty = (uint32_t) map(adc_output, 0, 4095, 0, 8000);
+        // ESP_LOGI("ADC", "%.2f V, (value: %d, duty: %lu/8000)", voltage, adc_output, duty);
 
-        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
-        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        // ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
+        // ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 
-        pcnt_unit_get_count(pcnt_handle, &pcnt_value);
-        pcnt_unit_clear_count(pcnt_handle);
-        fan_rpm_value = pcnt_value * 60 / 2; // rps -> rpm (2 pulses per revolution)
-        ESP_LOGI("PCNT", "%d rpm, (%d pulses/s)", fan_rpm_value, pcnt_value);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // pcnt_unit_get_count(pcnt_handle, &pcnt_value);
+        // pcnt_unit_clear_count(pcnt_handle);
+        // fan_rpm_value = pcnt_value * 60 / 2; // rps -> rpm (2 pulses per revolution)
+        // ESP_LOGI("PCNT", "%d rpm, (%d pulses/s)", fan_rpm_value, pcnt_value);
+        vTaskDelay(1 / portTICK_PERIOD_MS);
     }
 }
